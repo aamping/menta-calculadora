@@ -1,0 +1,75 @@
+.form-data {
+  border-radius: 15px;
+}
+
+.col-fase {
+  margin-top: 5px;
+}
+
+.form-fase {
+  border-radius: 5px;
+  margin-right: 54px;
+}
+
+
+.addon {
+  border-radius: 15px;
+}
+
+.no-addons {
+  margin-bottom: 15px;
+}
+
+.text-total {
+  align-items: 'right';
+}
+
+.button-add-fase {
+  margin-bottom: 10px;
+}
+
+.button-minus {
+  border-radius: 15px;
+}
+
+.pull-right.first-minus-icon {
+  margin-top: 9px;
+}
+
+.pull-right.minus-icon {
+  margin-top: 5px;
+}
+
+.pull-right {
+  margin-top: 7px;
+  margin-bottom: 0px;
+  margin-right: 5px;
+}
+
+.col-md-3 {
+  padding-right: 5px;
+  padding-left: 0;
+}
+
+.col-md-2 {
+  padding-right: 4px;
+  padding-left: 0;
+}
+
+.col-md-1 {
+  padding-right: 1px;
+  padding-left: 5px;
+}
+
+.modal-container {
+  position: relative;
+}
+
+.modal-container .modal, .modal-container .modal-backdrop {
+  position: absolute;
+}
+
+.title-top {
+  margin-top: 0px;
+  text-align: left;
+}

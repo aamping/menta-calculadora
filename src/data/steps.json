@@ -1,0 +1,12 @@
+[{
+  "title": "Paso 1",
+  "text": "Aqui pones el nombre de tu receta y otros datos necesarios para identificar tu receta"
+},
+{
+  "title": "Paso 2",
+  "text": "Aqui pones los gramos que quieres de tu receta y esas cosas"
+},
+{
+  "title": "Paso 3",
+  "text": "Los pasos de tu fase, los ingredientes que quieres, funciones, INCI, y otros datos"
+}]
