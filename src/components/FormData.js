@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { FormGroup,
          InputGroup,
          FormControl,
@@ -15,7 +16,10 @@ import { FormGroup,
          OverlayTrigger,
 } from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
+import _ from 'lodash';
 
+import ResetCom from './ResetCom';
+import { changeFaseProp, changeIngProp, changeBaseProp } from '../actions/calcActions';
 import pasosTool from '../data/steps.json';
 import './FormData.css';
 
@@ -27,12 +31,12 @@ const initialIngrediente = {
   porcentaje: 0,
   gramos: 0,
 };
-const initialFase = {
-  id: 0,
-  ingrediente: [{ ...initialIngrediente }],
-  porcentajeFase: 0,
-  gramosFase: 0,
-}
+// const initialFase = {
+//   id: 0,
+//   ingrediente: { ...initialIngrediente },
+//   porcentajeFase: 0,
+//   gramosFase: 0,
+// }
 
 class FormData extends Component {
   state = {
@@ -41,15 +45,10 @@ class FormData extends Component {
     showFase: false,
     faseSel: 0,
     ingSel: 0,
-    fase: [{ ...initialFase }],
-    formulaTotal: {
-      porcentaje: 0,
-      gramos: 0,
-    }
   }
 
   handleAddIngrediente = (faseIndex, ingredienteIndex) => {
-    const { fase } = this.state;
+    const { fase } = this.props;
     const { ingrediente } = fase[faseIndex];
     const newIngrediente = {
       id: ingrediente.length,
@@ -59,26 +58,32 @@ class FormData extends Component {
       porcentaje: 0,
       gramos: 0,
     };
-    fase[faseIndex].ingrediente.push(newIngrediente);
-    this.setState({ fase })
+    ingrediente[parseInt(ingredienteIndex, 10) + 1] = newIngrediente;
+    this.props.changeFaseProp({ fase: faseIndex, prop: 'ingrediente', value: ingrediente})
   }
 
   handleAddFase = (faseIndex) => {
-    const { fase } = this.state;
+    const { fase } = this.props;
     const newFase = {
-      id: fase.length,
-      ingrediente: [{ ...initialIngrediente }],
+      id: Object.keys(fase).length,
+      ingrediente: { 0: initialIngrediente },
       porcentajeFase: 0,
       gramosFase: 0,
     }
-    fase.push(newFase);
-    this.setState({ fase })
+    fase[parseInt(faseIndex, 10)+1] = newFase;
+    this.props.changeBaseProp({ prop: 'fase', value: fase });
   }
 
   handleDeleteIngrediente = (faseIndex, ingredienteIndex) => {
-    const { fase } = this.state;
-    fase[faseIndex].ingrediente.splice(ingredienteIndex, 1);
-    if (!fase[faseIndex].ingrediente.length) {
+    const { fase } = this.props;
+    let { ingrediente } = fase[faseIndex];
+    delete ingrediente[ingredienteIndex];
+    let i = 0
+    ingrediente = _.mapKeys(ingrediente, function(value, key) {
+      return i++;
+    });
+
+    if (!Object.keys(ingrediente).length) {
       const newIngrediente = {
         id: 0,
         nombre: '',
@@ -87,27 +92,50 @@ class FormData extends Component {
         porcentaje: 0,
         gramos: 0,
       };
-      fase[faseIndex].ingrediente.push(newIngrediente);
+      ingrediente[0] = newIngrediente;
     }
-    this.setState({ fase, showIng: false })
+    this.props.changeFaseProp({ fase: faseIndex, prop: 'ingrediente', value: ingrediente});
+    this.setState({ showIng: false })
   }
 
   handleDeleteFase = (faseIndex) => {
-    const { fase } = this.state;
-    fase.splice(faseIndex, 1);
-    if (!fase.length) {
+    let { fase } = this.props;
+    delete fase[faseIndex];
+    let i = 0;
+    fase =  _.mapKeys(fase, function(value, key) {
+      return i++;
+    });
+
+    if (!Object.keys(fase).length) {
       const newFase = {
         id: 0,
-        ingrediente: [{ ...initialIngrediente }],
+        ingrediente: { 0: initialIngrediente },
         porcentajeFase: 0,
         gramosFase: 0,
       }
-      fase.push(newFase);
+      fase[0] = newFase;
     }
-    this.setState({ fase, showFase: false })
+    this.props.changeBaseProp({ prop: 'fase', value: fase })
+    this.setState({ showFase: false })
   }
 
-  renderIngrediente(ingrediente, ingredienteIndex, faseIndex) {
+  handleBaseChange = (e) => {
+    const { name, value } = e.target;
+    this.props.changeBaseProp({ prop: name, value });
+  }
+
+  handleFaseChange = (fase, e) => {
+    const { name, value } = e.target;
+    this.props.changeFaseProp({ fase, prop: name, value });
+  }
+
+  handleIngChange = (fase, ingrediente, e) => {
+    const { name, value } = e.target;
+    this.props.changeIngProp({ fase, ingrediente, prop: name, value });
+  }
+
+  renderIngrediente({ nombre, inci, funcion, porcentaje, gramos }, ingredienteIndex, faseIndex) {
+    const { fase } = this.props;
     let label = false;
     if (ingredienteIndex === 0) label = true;
     return (
@@ -121,7 +149,7 @@ class FormData extends Component {
                   dense="true"
                   bsSize="xsmall"
                   className="button-minus"
-                  onClick={() => this.handleDeleteIngrediente(faseIndex, ingredienteIndex)}
+                  onClick={() => this.handleShowModal('showIng',{ faseSel: faseIndex, ingSel: ingredienteIndex })}
                 >
                   <Glyphicon glyph="minus" />
                 </Button>
@@ -145,10 +173,17 @@ class FormData extends Component {
           <FormGroup>
             <InputGroup>
               <InputGroup.Addon className='addon'>{ingredienteIndex+1}.</InputGroup.Addon>
-              <FormControl className='form-data form-ingredients' placeholder='Nombre de ingrediente' type="text" />
+              <FormControl
+                className='form-data form-ingredients'
+                placeholder='Nombre de ingrediente'
+                type="text"
+                name="nombre"
+                value={nombre ? nombre : ''}
+                onChange={(e) => this.handleIngChange(faseIndex, ingredienteIndex, e)}
+              />
             </InputGroup>
           </FormGroup>
-          {(ingredienteIndex === (this.state.fase[faseIndex].ingrediente.length -1)) ?
+          {(ingredienteIndex === (Object.keys(fase[faseIndex].ingrediente).length -1)) ?
           <ButtonToolbar>
             <Button onClick={() => this.handleAddIngrediente(faseIndex, ingredienteIndex)}>
               <Glyphicon glyph="plus" /> Añadir Ingrediente
@@ -159,20 +194,42 @@ class FormData extends Component {
         <Col xs={4.5} md={3}>
           {label ? <ControlLabel>INCI</ControlLabel> : null}
           <FormGroup>
-            <FormControl className='form-data form-ingredients' placeholder='INCI de ingrediente' type="text" />
+            <FormControl
+              className='form-data form-ingredients'
+              placeholder='INCI de ingrediente'
+              type="text"
+              name="inci"
+              value={inci ? inci : ''}
+              onChange={(e) => this.handleIngChange(faseIndex, ingredienteIndex, e)}
+            />
           </FormGroup>
         </Col>
         <Col xs={4.5} md={2}>
           {label ? <ControlLabel>Función</ControlLabel> : null}
           <FormGroup>
-            <FormControl className='form-data form-ingredients' placeholder='Función de ingrediente' type="text" />
+            <FormControl
+              className='form-data form-ingredients'
+              placeholder='Función de ingrediente'
+              type="text"
+              name="funcion"
+              value={funcion ? funcion : ''}
+              onChange={(e) => this.handleIngChange(faseIndex, ingredienteIndex, e)}
+            />
           </FormGroup>
         </Col>
         <Col xs={2} md={1}>
           {label ? <ControlLabel>Porcentaje</ControlLabel> : null}
           <FormGroup>
             <InputGroup>
-              <FormControl disabled={this.state.enableGramos} className='form-data form-ingredients' placeholder=' % ' type="text" />
+              <FormControl
+                disabled={this.state.enableGramos}
+                className='form-data form-ingredients'
+                placeholder=' % '
+                type="text"
+                name="porcentaje"
+                value={porcentaje ? porcentaje : ''}
+                onChange={(e) => this.handleIngChange(faseIndex, ingredienteIndex, e)}
+              />
               <InputGroup.Addon className='addon'>%</InputGroup.Addon>
             </InputGroup>
           </FormGroup>
@@ -181,7 +238,15 @@ class FormData extends Component {
           {label ? <ControlLabel>Gramos</ControlLabel> : null}
           <FormGroup>
             <InputGroup>
-              <FormControl disabled={!this.state.enableGramos} className='form-data form-ingredients' placeholder=' grs ' type="text" />
+              <FormControl
+                disabled={!this.state.enableGramos}
+                className='form-data form-ingredients'
+                placeholder=' grs '
+                type="text"
+                name="gramos"
+                value={gramos ? gramos : ''}
+                onChange={(e) => this.handleIngChange(faseIndex, ingredienteIndex, e)}
+              />
               <InputGroup.Addon className='addon'>g</InputGroup.Addon>
             </InputGroup>
           </FormGroup>
@@ -190,8 +255,9 @@ class FormData extends Component {
     );
   }
 
-  renderFase(fase, faseIndex) {
-    const { ingrediente } = fase;
+  renderFase({ ingrediente, porcentajeFase, gramosFase }, faseIndex) {
+    const { fase } = this.props;
+    const length = (parseInt(Object.keys(fase).length, 10) -1);
     return(
       <div key={faseIndex}>
         <Row className="show-grid">
@@ -206,10 +272,10 @@ class FormData extends Component {
                 >
                   <InputGroup.Addon className='addon'><Badge>{3}</Badge></InputGroup.Addon>
                 </OverlayTrigger>
-                <FormControl style={{ height: 42 * ingrediente.length }} className='form-data form-fase' bsSize='lg' type="text" defaultValue={'Fase '+ (faseIndex+1)} />
+                <FormControl style={{ height: 42 * Object.keys(fase[faseIndex].ingrediente).length }} className='form-data form-fase' bsSize='lg' type="text" defaultValue={'Fase '+ (faseIndex+1)} />
               </InputGroup>
             </FormGroup>
-            {(faseIndex === (this.state.fase.length -1)) ?
+            {(length === faseIndex) ?
             <ButtonToolbar className="button-add-fase">
               <Button onClick={() => this.handleAddFase(faseIndex)}>
                 <Glyphicon glyph="plus" /> Añadir Fase
@@ -222,7 +288,7 @@ class FormData extends Component {
               </Button>
             </ButtonToolbar>
           </Col>
-        {ingrediente.map((value, index) => this.renderIngrediente(value, index, faseIndex))}
+        {_.map(ingrediente, (value, index) => this.renderIngrediente(value, parseInt(index, 10), faseIndex))}
         </Row>
         <Row className="show-grid">
           <Col xs={10} md={8} />
@@ -234,7 +300,15 @@ class FormData extends Component {
           <Col xs={2} md={1}>
             <FormGroup>
               <InputGroup>
-                <FormControl disabled={this.state.enableGramos} className='form-data form-ingredients' placeholder=' % ' type="text" />
+                <FormControl
+                  disabled={this.state.enableGramos}
+                  className='form-data form-ingredients'
+                  placeholder=' % '
+                  type="text"
+                  name="porcentajeFase"
+                  value={porcentajeFase ? porcentajeFase : ''}
+                  onChange={(e) => this.handleFaseChange(faseIndex, e)}
+                />
                 <InputGroup.Addon className='addon'>%</InputGroup.Addon>
               </InputGroup>
             </FormGroup>
@@ -242,7 +316,15 @@ class FormData extends Component {
           <Col xs={2} md={1}>
             <FormGroup>
               <InputGroup>
-                <FormControl disabled={!this.state.enableGramos} className='form-data form-ingredients' placeholder=' grs ' type="text" />
+                <FormControl
+                  disabled={!this.state.enableGramos}
+                  className='form-data form-ingredients'
+                  placeholder=' grs '
+                  type="text"
+                  name="gramosFase"
+                  value={gramosFase ? gramosFase : ''}
+                  onChange={(e) => this.handleFaseChange(faseIndex, e)}
+                />
                 <InputGroup.Addon className='addon'>g</InputGroup.Addon>
               </InputGroup>
             </FormGroup>
@@ -253,14 +335,14 @@ class FormData extends Component {
   }
 
   render() {
-    const { fase, enableGramos } = this.state;
-    console.log(this.state);
+    const { enableGramos } = this.state;
+    const { fase } = this.props;
     return (
       <form>
       <Grid>
         <Row>
           <Col xs={3} md={7}>
-            <h1 className='title-top'>Calculadora de recetas</h1>
+            <h1 className='title-top'>Calculadora de ingredientes</h1>
           </Col>
           <Col xs={11} md={2} />
           <Col xs={5} md={3} >
@@ -289,12 +371,34 @@ class FormData extends Component {
                 >
                   <InputGroup.Addon className='addon' ><Badge>1</Badge></InputGroup.Addon>
                 </OverlayTrigger>
-                <FormControl placeholder='Nombre de tu receta' className='form-data' bsSize='lg' type="text" />
+                <FormControl
+                  placeholder='Nombre de tu receta'
+                  className='form-data'
+                  bsSize='lg'
+                  type="text"
+                  name="titulo"
+                  value={this.props.titulo ? this.props.titulo : ''}
+                  onChange={this.handleBaseChange}
+                />
               </InputGroup>
             </FormGroup>
             <FormGroup>
-              <FormControl placeholder='Numero de referencia' className='form-data no-addons' type="text" />
-              <FormControl placeholder='Fecha de producción' className='form-data no-addons' type="text" />
+              <FormControl
+                placeholder='Numero de referencia'
+                className='form-data no-addons'
+                type="text"
+                name="referencia"
+                value={this.props.referencia ? this.props.referencia : ''}
+                onChange={this.handleBaseChange}
+              />
+              <FormControl
+                placeholder='Fecha de producción'
+                className='form-data no-addons'
+                type="text"
+                name="fecha"
+                value={this.props.fecha ? this.props.fecha : ''}
+                onChange={this.handleBaseChange}
+              />
             </FormGroup>
           </Col>
           <Col xs={6} md={4} />
@@ -309,13 +413,23 @@ class FormData extends Component {
                 >
                   <InputGroup.Addon className='addon'><Badge>2</Badge></InputGroup.Addon>
                 </OverlayTrigger>
-                <FormControl placeholder='Peso total en gramos' className='form-data' bsSize='lg' type="text" />
+                <FormControl
+                  disabled={this.state.enableGramos}
+                  placeholder='Peso total en gramos'
+                  className='form-data'
+                  bsSize='lg'
+                  type="text"
+                  name="pesoTotal"
+                  value={this.props.pesoTotal ? this.props.pesoTotal : ''}
+                  onChange={this.handleBaseChange}
+                />
+                <InputGroup.Addon className='addon'>g</InputGroup.Addon>
               </InputGroup>
             </FormGroup>
           </Col>
         </Row>
         <br /><br />
-        {fase.map((value, index) => this.renderFase(value, index))}
+        {_.map(fase, (value, index) => this.renderFase(value, parseInt(index, 10)))}
         <Row className="show-grid">
           <Col xs={10} md={8} />
           <Col xs={4.5} md={2}>
@@ -355,9 +469,7 @@ class FormData extends Component {
           <Col xs={10} md={10} />
           <Col xs={2} md={2}>
             <ButtonToolbar>
-              <Button>
-                Borrar
-              </Button>
+              <ResetCom />
             </ButtonToolbar>
           </Col>
         </Row>
@@ -425,4 +537,11 @@ class FormData extends Component {
   );
 }
 
-export default FormData;
+const mapStateToProps = ({ calc, purge }) => {
+  const { fase, titulo, referencia, fecha, pesoTotal, ts } = calc;
+  const { tss } = purge;
+  console.log(fase);
+  return { fase, titulo, referencia, fecha, pesoTotal, ts, tss };
+}
+
+export default connect(mapStateToProps, { changeBaseProp, changeFaseProp, changeIngProp })(FormData);
