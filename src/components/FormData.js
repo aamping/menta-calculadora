@@ -121,7 +121,7 @@ class FormData extends Component {
 
   handleBaseChange = (e) => {
     const { name, value } = e.target;
-    this.props.changeBaseProp({ prop: name, value });
+    this.props.changeBaseProp({ prop: name, value: value });
   }
 
   handleFaseChange = (fase, e) => {
@@ -219,7 +219,7 @@ class FormData extends Component {
         </Col>
         <Col xs={2} md={1}>
           {label ? <ControlLabel>Porcentaje</ControlLabel> : null}
-          <FormGroup>
+          <FormGroup validationState={this.getValidationState(porcentaje)}>
             <InputGroup>
               <FormControl
                 disabled={this.state.enableGramos}
@@ -236,7 +236,7 @@ class FormData extends Component {
         </Col>
         <Col xs={2} md={1}>
           {label ? <ControlLabel>Gramos</ControlLabel> : null}
-          <FormGroup>
+          <FormGroup validationState={this.getValidationState(gramos)}>
             <InputGroup>
               <FormControl
                 disabled={!this.state.enableGramos}
@@ -307,7 +307,6 @@ class FormData extends Component {
                   type="text"
                   name="porcentajeFase"
                   value={porcentajeFase ? porcentajeFase : ''}
-                  onChange={(e) => this.handleFaseChange(faseIndex, e)}
                 />
                 <InputGroup.Addon className='addon'>%</InputGroup.Addon>
               </InputGroup>
@@ -323,7 +322,6 @@ class FormData extends Component {
                   type="text"
                   name="gramosFase"
                   value={gramosFase ? gramosFase : ''}
-                  onChange={(e) => this.handleFaseChange(faseIndex, e)}
                 />
                 <InputGroup.Addon className='addon'>g</InputGroup.Addon>
               </InputGroup>
@@ -440,15 +438,29 @@ class FormData extends Component {
           <Col xs={2} md={1}>
             <FormGroup>
               <InputGroup>
-                <FormControl disabled={this.state.enableGramos} className='form-data form-ingredients' placeholder=' % ' type="text" />
+                <FormControl
+                  disabled={this.state.enableGramos}
+                  className='form-data form-ingredients'
+                  placeholder=' % '
+                  type="text"
+                  name="porcentajeTotal"
+                  value={this.props.porcentajeTotal ? this.props.porcentajeTotal : ''}
+                />
                 <InputGroup.Addon className='addon'>%</InputGroup.Addon>
               </InputGroup>
             </FormGroup>
           </Col>
           <Col xs={2} md={1}>
-            <FormGroup>
+            <FormGroup validationState={this.getValidationState(this.props.gramosTotal)}>
               <InputGroup>
-                <FormControl disabled={!this.state.enableGramos} className='form-data form-ingredients' placeholder=' grs ' type="text" />
+                <FormControl
+                  disabled={!this.state.enableGramos}
+                  className='form-data form-ingredients'
+                  placeholder=' grs '
+                  type="int"
+                  name="gramosTotal"
+                  value={this.props.gramosTotal ? this.props.gramosTotal : ''}
+                />
                 <InputGroup.Addon className='addon'>g</InputGroup.Addon>
               </InputGroup>
             </FormGroup>
@@ -478,6 +490,12 @@ class FormData extends Component {
       {this.renderConfirmIngrediente()}
     	</form>
     );
+  }
+  getValidationState(number) {
+    function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
+    if (!number) return null;
+    if (isNumber(number)) return null;
+    return "error";
   }
 
   handleSwitch = (state) => {
@@ -538,10 +556,9 @@ class FormData extends Component {
 }
 
 const mapStateToProps = ({ calc, purge }) => {
-  const { fase, titulo, referencia, fecha, pesoTotal, ts } = calc;
-  const { tss } = purge;
-  console.log(fase);
-  return { fase, titulo, referencia, fecha, pesoTotal, ts, tss };
+  const { fase, titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal, ts } = calc;
+  console.log(calc);
+  return { fase, titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal, ts };
 }
 
 export default connect(mapStateToProps, { changeBaseProp, changeFaseProp, changeIngProp })(FormData);
