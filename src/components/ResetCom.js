@@ -19,7 +19,7 @@ class ResetCom extends Component {
        }
 
        render() {
-             return(<Button onClick={this.onPurgeStoredState.bind(this)}>Borrar</Button>);
+             return(<Button className={this.props.className} onClick={this.onPurgeStoredState.bind(this)}>Borrar</Button>);
         }
 }
 

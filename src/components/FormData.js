@@ -17,11 +17,15 @@ import { FormGroup,
 } from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
 import _ from 'lodash';
+import { generatePdf } from './ToPDF';
+// import DeleteIcon from 'material-ui-icons/Delete';
+// import Button2 from 'material-ui/Button';
 
 import ResetCom from './ResetCom';
 import { changeFaseProp, changeIngProp, changeBaseProp } from '../actions/calcActions';
 import pasosTool from '../data/steps.json';
 import './FormData.css';
+import FloatingMenuItem from './FloatingMenuItem';
 
 const initialIngrediente = {
   id: 0,
@@ -38,6 +42,18 @@ const initialIngrediente = {
 //   gramosFase: 0,
 // }
 
+const styles = {
+  buttonColor: {
+    color: '#46b198'
+  },
+  switchColor: {
+    color: '#46b198',
+  },
+  badgeColor: {
+    backgroundColor: '#46b198',
+  }
+}
+
 class FormData extends Component {
   state = {
     enableGramos: true,
@@ -45,6 +61,7 @@ class FormData extends Component {
     showFase: false,
     faseSel: 0,
     ingSel: 0,
+    toggled: false,
   }
 
   handleAddIngrediente = (faseIndex, ingredienteIndex) => {
@@ -140,7 +157,7 @@ class FormData extends Component {
     if (ingredienteIndex === 0) label = true;
     return (
       <div key={ingredienteIndex}>
-        <Col xs={1} md={1}>
+        <Col xs={2} md={1}>
           {label ? (
             <div>
               <br />
@@ -168,7 +185,7 @@ class FormData extends Component {
             </ButtonToolbar>
             )}
         </Col>
-        <Col xs={4.5} md={3}>
+        <Col xs={10} md={3}>
           {label ? <ControlLabel>Ingredientes</ControlLabel> : null}
           <FormGroup>
             <InputGroup>
@@ -184,14 +201,20 @@ class FormData extends Component {
             </InputGroup>
           </FormGroup>
           {(ingredienteIndex === (Object.keys(fase[faseIndex].ingrediente).length -1)) ?
-          <ButtonToolbar>
-            <Button onClick={() => this.handleAddIngrediente(faseIndex, ingredienteIndex)}>
-              <Glyphicon glyph="plus" /> Añadir Ingrediente
+          <ButtonToolbar style={{ display: 'flex' }}>
+            <Button
+              dense="true"
+              bsSize="small"
+              className="button-minus"
+              onClick={() => this.handleAddIngrediente(faseIndex, ingredienteIndex)}
+            >
+              <Glyphicon glyph="plus" />
             </Button>
+            <ControlLabel className="label-button">Añadir más ingredientes a la Fase</ControlLabel>
           </ButtonToolbar>
           : null}
         </Col>
-        <Col xs={4.5} md={3}>
+        <Col xs={12} md={3}>
           {label ? <ControlLabel>INCI</ControlLabel> : null}
           <FormGroup>
             <FormControl
@@ -204,7 +227,7 @@ class FormData extends Component {
             />
           </FormGroup>
         </Col>
-        <Col xs={4.5} md={2}>
+        <Col xs={12} md={2}>
           {label ? <ControlLabel>Función</ControlLabel> : null}
           <FormGroup>
             <FormControl
@@ -217,7 +240,7 @@ class FormData extends Component {
             />
           </FormGroup>
         </Col>
-        <Col xs={2} md={1}>
+        <Col xs={6} md={1}>
           {label ? <ControlLabel>Porcentaje</ControlLabel> : null}
           <FormGroup validationState={this.getValidationState(porcentaje)}>
             <InputGroup>
@@ -234,7 +257,7 @@ class FormData extends Component {
             </InputGroup>
           </FormGroup>
         </Col>
-        <Col xs={2} md={1}>
+        <Col xs={6} md={1}>
           {label ? <ControlLabel>Gramos</ControlLabel> : null}
           <FormGroup validationState={this.getValidationState(gramos)}>
             <InputGroup>
@@ -261,43 +284,66 @@ class FormData extends Component {
     return(
       <div key={faseIndex}>
         <Row className="show-grid">
-          <Col xs={2} md={1} className='col-fase'>
+          <Col xs={12} md={1} className='col-fase'>
             <ControlLabel></ControlLabel>
-            <FormGroup>
-              <InputGroup>
-                <OverlayTrigger
-                  trigger={['hover', 'focus']}
-                  placement="top"
-                  overlay={this.renderPopover(pasosTool[2])}
-                >
-                  <InputGroup.Addon className='addon'><Badge>{3}</Badge></InputGroup.Addon>
-                </OverlayTrigger>
-                <FormControl style={{ height: 42 * Object.keys(fase[faseIndex].ingrediente).length }} className='form-data form-fase' bsSize='lg' type="text" defaultValue={'Fase '+ (faseIndex+1)} />
-              </InputGroup>
-            </FormGroup>
-            {(length === faseIndex) ?
-            <ButtonToolbar className="button-add-fase">
-              <Button onClick={() => this.handleAddFase(faseIndex)}>
-                <Glyphicon glyph="plus" /> Añadir Fase
-              </Button>
-            </ButtonToolbar>
-            : null}
-            <ButtonToolbar>
-              <Button bsSize="xsmall" onClick={() => this.handleShowModal('showFase', { faseSel: faseIndex })}>
-                <Glyphicon glyph="minus" /> Borrar Fase
-              </Button>
-            </ButtonToolbar>
+            <Row>
+              <Col xs={6} md={12} className='col-fase'>
+                <FormGroup className="form-group-fase">
+                  <InputGroup>
+                    <OverlayTrigger
+                      trigger={['hover', 'focus']}
+                      placement="top"
+                      overlay={this.renderPopover(pasosTool[2])}
+                    >
+                      <InputGroup.Addon className='addon'><Badge style={styles.badgeColor}>{3}</Badge></InputGroup.Addon>
+                    </OverlayTrigger>
+                    <FormControl style={{ height: 42 * Object.keys(fase[faseIndex].ingrediente).length }} className='form-data form-fase' bsSize='lg' type="text" defaultValue={'Fase '+ (faseIndex+1)} />
+                  </InputGroup>
+                </FormGroup>
+                </Col>
+                <Col xs={6} md={12} className='col-fase'>
+                {(length === faseIndex) ?
+                <div style={{ display: 'flex' }}>
+                  <ButtonToolbar>
+                    <Button
+                      dense="true"
+                      bsSize="small"
+                      className="button-minus"
+                      onClick={() => this.handleAddFase(faseIndex)}
+                    >
+                      <Glyphicon glyph="plus" />
+                    </Button>
+                  </ButtonToolbar>
+                  <ControlLabel className="label-button label-button-fase">Añadir Fase</ControlLabel>
+                </div>
+                : null}
+                <div style={{ display: 'flex' }} className="button-fase">
+                  <ButtonToolbar>
+                    <Button
+                      dense="true"
+                      bsSize="xsmall"
+                      className="button-minus"
+                      onClick={() => this.handleShowModal('showFase', { faseSel: faseIndex })}
+                    >
+                      <Glyphicon glyph="minus" />
+                    </Button>
+                  </ButtonToolbar>
+                  <ControlLabel className="label-button label-button-fase">Borrar Fase</ControlLabel>
+                </div>
+                <br />
+              </Col>
+            </Row>
           </Col>
         {_.map(ingrediente, (value, index) => this.renderIngrediente(value, parseInt(index, 10), faseIndex))}
         </Row>
         <Row className="show-grid">
-          <Col xs={10} md={8} />
-          <Col xs={4.5} md={2}>
+          <Col xs={12} md={8} />
+          <Col xs={12} md={2}>
             <div className='pull-right'>
               <ControlLabel>Total Fase {faseIndex +1}</ControlLabel>
             </div>
           </Col>
-          <Col xs={2} md={1}>
+          <Col xs={6} md={1}>
             <FormGroup>
               <InputGroup>
                 <FormControl
@@ -312,7 +358,7 @@ class FormData extends Component {
               </InputGroup>
             </FormGroup>
           </Col>
-          <Col xs={2} md={1}>
+          <Col xs={6} md={1}>
             <FormGroup>
               <InputGroup>
                 <FormControl
@@ -334,19 +380,20 @@ class FormData extends Component {
 
   render() {
     const { enableGramos } = this.state;
-    const { fase } = this.props;
+    const { fase, titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal } = this.props;
     return (
       <form>
       <Grid>
         <Row>
-          <Col xs={3} md={7}>
+          <Col xs={12} md={7}>
             <h1 className='title-top'>Calculadora de ingredientes</h1>
           </Col>
-          <Col xs={11} md={2} />
-          <Col xs={5} md={3} >
+          <Col xs={12} md={2} />
+          <Col xs={12} md={3} >
             <FormGroup>
               <Switch
                 offColor={'primary'}
+                style={{ background: '#46b198' }}
                 onText={'Gramos'}
                 offText={'Porcentaje'}
                 handleWidth={100}
@@ -358,8 +405,8 @@ class FormData extends Component {
         </Row>
         <br />
         <Row className="show-grid">
-          <Col xs={6} md={4}>
-            <ControlLabel>Datos de tu receta</ControlLabel>
+          <Col xs={12} md={4}>
+            <ControlLabel className="label-form">Datos de tu receta</ControlLabel>
             <FormGroup>
               <InputGroup>
                 <OverlayTrigger
@@ -367,7 +414,7 @@ class FormData extends Component {
                   placement="top"
                   overlay={this.renderPopover(pasosTool[0])}
                 >
-                  <InputGroup.Addon className='addon' ><Badge>1</Badge></InputGroup.Addon>
+                  <InputGroup.Addon className='addon' ><Badge style={styles.badgeColor}>1</Badge></InputGroup.Addon>
                 </OverlayTrigger>
                 <FormControl
                   placeholder='Nombre de tu receta'
@@ -399,8 +446,8 @@ class FormData extends Component {
               />
             </FormGroup>
           </Col>
-          <Col xs={6} md={4} />
-          <Col xsHidden md={4}>
+          <Col xs={12} md={4} />
+          <Col xs={12} md={4}>
             <ControlLabel>Tamaño total del lote en gramos</ControlLabel>
             <FormGroup>
               <InputGroup>
@@ -409,7 +456,7 @@ class FormData extends Component {
                   placement="top"
                   overlay={this.renderPopover(pasosTool[1])}
                 >
-                  <InputGroup.Addon className='addon'><Badge>2</Badge></InputGroup.Addon>
+                  <InputGroup.Addon className='addon'><Badge style={styles.badgeColor}>2</Badge></InputGroup.Addon>
                 </OverlayTrigger>
                 <FormControl
                   disabled={this.state.enableGramos}
@@ -429,13 +476,13 @@ class FormData extends Component {
         <br /><br />
         {_.map(fase, (value, index) => this.renderFase(value, parseInt(index, 10)))}
         <Row className="show-grid">
-          <Col xs={10} md={8} />
-          <Col xs={4.5} md={2}>
+          <Col xs={12} md={8} />
+          <Col xs={12} md={2}>
             <div className='pull-right'>
               <ControlLabel>Total Fórmula</ControlLabel>
             </div>
           </Col>
-          <Col xs={2} md={1}>
+          <Col xs={6} md={1}>
             <FormGroup>
               <InputGroup>
                 <FormControl
@@ -450,7 +497,7 @@ class FormData extends Component {
               </InputGroup>
             </FormGroup>
           </Col>
-          <Col xs={2} md={1}>
+          <Col xs={6} md={1}>
             <FormGroup validationState={this.getValidationState(this.props.gramosTotal)}>
               <InputGroup>
                 <FormControl
@@ -467,10 +514,15 @@ class FormData extends Component {
           </Col>
         </Row>
         <Row className="show-grid">
-          <Col xs={10} md={10} />
-          <Col xs={2} md={2}>
+          <Col xs={12} md={10} />
+          <Col xs={12} md={2}>
             <ButtonToolbar>
-              <Button bsStyle="primary" bsSize="large">
+              <Button
+                bsStyle="primary"
+                bsSize="large"
+                className="btn-exportar"
+                onClick={() => generatePdf({ titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal }, fase)}
+              >
                 Exportar / Guardar
               </Button>
             </ButtonToolbar>
@@ -478,19 +530,24 @@ class FormData extends Component {
         </Row>
         <br />
         <Row className="show-grid">
-          <Col xs={10} md={10} />
-          <Col xs={2} md={2}>
+          <Col xs={12} md={10} />
+          <Col xs={12} md={2}>
             <ButtonToolbar>
-              <ResetCom />
+              <ResetCom className="btn-primary btn-borrar"/>
             </ButtonToolbar>
           </Col>
         </Row>
       </Grid>
       {this.renderConfirmFase()}
       {this.renderConfirmIngrediente()}
+        {// <Button2 fab aria-label="delete">
+        //   <DeleteIcon />
+        // </Button2>
+      }
     	</form>
     );
   }
+
   getValidationState(number) {
     function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
     if (!number) return null;
