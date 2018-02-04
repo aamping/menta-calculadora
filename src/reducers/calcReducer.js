@@ -33,6 +33,17 @@ export default (state = initialState, action) => {
   console.log(action);
   switch (action.type) {
     case calc.CHANGE_BASE_PROP:
+      let res = {};
+      if (action.payload.prop === 'pesoTotal') {
+        res = handlePesoTotal(state.fase, action.payload.value);
+        return {
+          ...state,
+          ts: new Date(),
+          fase: res.newFase,
+          gramosTotal: res.gramosTotal,
+          pesoTotal: action.payload.value,
+        };
+      }
       return {
         ...state,
         ts: new Date(),
@@ -52,7 +63,7 @@ export default (state = initialState, action) => {
       };
     case calc.CHANGE_ING_PROP:
       const { fase, ingrediente, prop, value } = action.payload;
-      let res = {};
+      res = {};
       if (prop === 'gramos') {
         res = handleGramos(state.fase, value, ingrediente, fase)
         return {
@@ -115,6 +126,23 @@ export default (state = initialState, action) => {
       return state;
   }
 };
+
+export const handlePesoTotal = (stateFase, pesoTotal) => {
+  const newFase = {};
+  const gramosFase = [];
+  let gramosTotal = 0;
+  _.map(stateFase, (valFase, key) => {
+    const newIngrediente = {}
+    _.map(valFase.ingrediente, (val, keyId) => {
+      const gramos = (val.porcentaje/100)*pesoTotal;
+      newIngrediente[keyId] = { ...val, gramos };
+      gramosFase[key] = (gramosFase[key] ? gramosFase[key] : 0) + parseInt(gramos, 10);
+    });
+    newFase[key] = { ...valFase, ingrediente: { ...newIngrediente }, gramosFase: gramosFase[key] };
+    gramosTotal = gramosTotal + gramosFase[key];
+  });
+  return { newFase, gramosTotal };
+}
 
 export const handleGramos = (stateFase, gramosVal, ingredienteIndex, faseIndex) => {
   const newFase = {};

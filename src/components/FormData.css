@@ -3,13 +3,13 @@
 }
 
 .col-fase {
-  margin-top: 5px;
+  margin-top: 3px;
   padding-right: 10px;
 }
 
 .form-fase {
   border-radius: 5px;
-  margin-right: 54px;
+  margin-right: 56px;
 }
 
 
@@ -125,4 +125,15 @@
 .btn-borrar {
   color: black;
   border-color: black;
+}
+
+.info-btn {
+  padding: 10px;
+  margin-right: -40px;
+}
+
+.total-formula-label {
+  color: #46b198;
+  font-size: 15px;
+  font-weight: bold;
 }

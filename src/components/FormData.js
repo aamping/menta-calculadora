@@ -189,7 +189,13 @@ class FormData extends Component {
           {label ? <ControlLabel>Ingredientes</ControlLabel> : null}
           <FormGroup>
             <InputGroup>
-              <InputGroup.Addon className='addon'>{ingredienteIndex+1}.</InputGroup.Addon>
+              <OverlayTrigger
+                trigger={['hover', 'focus']}
+                placement="top"
+                overlay={this.renderPopover(pasosTool.ingrediente)}
+              >
+                <InputGroup.Addon className='addon'>{ingredienteIndex+1}.</InputGroup.Addon>
+              </OverlayTrigger>
               <FormControl
                 className='form-data form-ingredients'
                 placeholder='Nombre de ingrediente'
@@ -228,7 +234,18 @@ class FormData extends Component {
           </FormGroup>
         </Col>
         <Col xs={12} md={2}>
-          {label ? <ControlLabel>Función</ControlLabel> : null}
+          {label ?
+            <div style={{}} >
+              <ControlLabel>Función</ControlLabel>
+              <OverlayTrigger
+                trigger={['hover', 'focus']}
+                placement="top"
+                overlay={this.renderPopover(pasosTool.funcion)}
+              >
+                <Glyphicon style={{ marginLeft: '5px' }} glyph="info-sign" />
+              </OverlayTrigger>
+            </div>
+            : null}
           <FormGroup>
             <FormControl
               className='form-data form-ingredients'
@@ -242,7 +259,7 @@ class FormData extends Component {
         </Col>
         <Col xs={6} md={1}>
           {label ? <ControlLabel>Porcentaje</ControlLabel> : null}
-          <FormGroup validationState={this.getValidationState(porcentaje)}>
+          <FormGroup validationState={this.getValidationStatePorcentaje(porcentaje)}>
             <InputGroup>
               <FormControl
                 disabled={this.state.enableGramos}
@@ -264,7 +281,7 @@ class FormData extends Component {
               <FormControl
                 disabled={!this.state.enableGramos}
                 className='form-data form-ingredients'
-                placeholder=' grs '
+                placeholder=' 00 '
                 type="text"
                 name="gramos"
                 value={gramos ? gramos : ''}
@@ -280,7 +297,9 @@ class FormData extends Component {
 
   renderFase({ ingrediente, porcentajeFase, gramosFase }, faseIndex) {
     const { fase } = this.props;
+    let marginTop = {};
     const length = (parseInt(Object.keys(fase).length, 10) -1);
+    if (length === faseIndex) marginTop = "-28px";
     return(
       <div key={faseIndex}>
         <Row className="show-grid">
@@ -293,9 +312,11 @@ class FormData extends Component {
                     <OverlayTrigger
                       trigger={['hover', 'focus']}
                       placement="top"
-                      overlay={this.renderPopover(pasosTool[2])}
+                      overlay={this.renderPopover(pasosTool.pasos[2])}
                     >
-                      <InputGroup.Addon className='addon'><Badge style={styles.badgeColor}>{3}</Badge></InputGroup.Addon>
+                      <InputGroup.Addon className='addon'>
+                        {faseIndex === 0 ? <Badge style={styles.badgeColor}>{3}</Badge> : <div style={{ width: '21px'}} /> }
+                      </InputGroup.Addon>
                     </OverlayTrigger>
                     <FormControl style={{ height: 42 * Object.keys(fase[faseIndex].ingrediente).length }} className='form-data form-fase' bsSize='lg' type="text" defaultValue={'Fase '+ (faseIndex+1)} />
                   </InputGroup>
@@ -338,41 +359,43 @@ class FormData extends Component {
         </Row>
         <Row className="show-grid">
           <Col xs={12} md={8} />
-          <Col xs={12} md={2}>
-            <div className='pull-right'>
-              <ControlLabel>Total Fase {faseIndex +1}</ControlLabel>
-            </div>
-          </Col>
-          <Col xs={6} md={1}>
-            <FormGroup>
-              <InputGroup>
-                <FormControl
-                  disabled={this.state.enableGramos}
-                  className='form-data form-ingredients'
-                  placeholder=' % '
-                  type="text"
-                  name="porcentajeFase"
-                  value={porcentajeFase ? porcentajeFase : ''}
-                />
-                <InputGroup.Addon className='addon'>%</InputGroup.Addon>
-              </InputGroup>
-            </FormGroup>
-          </Col>
-          <Col xs={6} md={1}>
-            <FormGroup>
-              <InputGroup>
-                <FormControl
-                  disabled={!this.state.enableGramos}
-                  className='form-data form-ingredients'
-                  placeholder=' grs '
-                  type="text"
-                  name="gramosFase"
-                  value={gramosFase ? gramosFase : ''}
-                />
-                <InputGroup.Addon className='addon'>g</InputGroup.Addon>
-              </InputGroup>
-            </FormGroup>
-          </Col>
+          <div >
+            <Col xs={12} md={2} style={{ marginTop }}>
+              <div className='pull-right'>
+                <ControlLabel>Total Fase {faseIndex +1}</ControlLabel>
+              </div>
+            </Col>
+            <Col xs={6} md={1} style={{ marginTop }}>
+              <FormGroup validationState={this.getValidationStatePorcentaje(porcentajeFase)}>
+                <InputGroup>
+                  <FormControl
+                    disabled={this.state.enableGramos}
+                    className='form-data form-ingredients'
+                    placeholder=' % '
+                    type="text"
+                    name="porcentajeFase"
+                    value={porcentajeFase ? porcentajeFase : ''}
+                  />
+                  <InputGroup.Addon className='addon'>%</InputGroup.Addon>
+                </InputGroup>
+              </FormGroup>
+            </Col>
+            <Col xs={6} md={1} style={{ marginTop }}>
+              <FormGroup>
+                <InputGroup>
+                  <FormControl
+                    disabled={!this.state.enableGramos}
+                    className='form-data form-ingredients'
+                    placeholder=' 00 '
+                    type="text"
+                    name="gramosFase"
+                    value={gramosFase ? gramosFase : ''}
+                  />
+                  <InputGroup.Addon className='addon'>g</InputGroup.Addon>
+                </InputGroup>
+              </FormGroup>
+            </Col>
+          </div>
         </Row>
       </div>
     );
@@ -412,7 +435,7 @@ class FormData extends Component {
                 <OverlayTrigger
                   trigger={['hover', 'focus']}
                   placement="top"
-                  overlay={this.renderPopover(pasosTool[0])}
+                  overlay={this.renderPopover(pasosTool.pasos[0])}
                 >
                   <InputGroup.Addon className='addon' ><Badge style={styles.badgeColor}>1</Badge></InputGroup.Addon>
                 </OverlayTrigger>
@@ -427,15 +450,24 @@ class FormData extends Component {
                 />
               </InputGroup>
             </FormGroup>
-            <FormGroup>
-              <FormControl
-                placeholder='Numero de referencia'
-                className='form-data no-addons'
-                type="text"
-                name="referencia"
-                value={this.props.referencia ? this.props.referencia : ''}
-                onChange={this.handleBaseChange}
-              />
+            <div style={{ display: 'flex' }}>
+                <FormControl
+                  placeholder='Numero de referencia'
+                  className='form-data no-addons'
+                  type="text"
+                  name="referencia"
+                  value={this.props.referencia ? this.props.referencia : ''}
+                  onChange={this.handleBaseChange}
+                />
+                <OverlayTrigger
+                  trigger={['hover', 'focus']}
+                  placement="top"
+                  overlay={this.renderPopover(pasosTool.infopoint)}
+                >
+                  <Glyphicon className="info-btn" glyph="info-sign" />
+                </OverlayTrigger>
+              </div>
+              <FormGroup>
               <FormControl
                 placeholder='Fecha de producción'
                 className='form-data no-addons'
@@ -454,7 +486,7 @@ class FormData extends Component {
                 <OverlayTrigger
                   trigger={['hover', 'focus']}
                   placement="top"
-                  overlay={this.renderPopover(pasosTool[1])}
+                  overlay={this.renderPopover(pasosTool.pasos[1])}
                 >
                   <InputGroup.Addon className='addon'><Badge style={styles.badgeColor}>2</Badge></InputGroup.Addon>
                 </OverlayTrigger>
@@ -479,11 +511,11 @@ class FormData extends Component {
           <Col xs={12} md={8} />
           <Col xs={12} md={2}>
             <div className='pull-right'>
-              <ControlLabel>Total Fórmula</ControlLabel>
+              <ControlLabel className="total-formula-label">Total Fórmula</ControlLabel>
             </div>
           </Col>
           <Col xs={6} md={1}>
-            <FormGroup>
+            <FormGroup validationState={this.getValidationStatePorcentaje(this.props.porcentajeTotal, "total")}>
               <InputGroup>
                 <FormControl
                   disabled={this.state.enableGramos}
@@ -503,7 +535,7 @@ class FormData extends Component {
                 <FormControl
                   disabled={!this.state.enableGramos}
                   className='form-data form-ingredients'
-                  placeholder=' grs '
+                  placeholder=' 00 '
                   type="int"
                   name="gramosTotal"
                   value={this.props.gramosTotal ? this.props.gramosTotal : ''}
@@ -523,7 +555,7 @@ class FormData extends Component {
                 className="btn-exportar"
                 onClick={() => generatePdf({ titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal }, fase)}
               >
-                Exportar / Guardar
+                Exportar a PDF
               </Button>
             </ButtonToolbar>
           </Col>
@@ -551,6 +583,15 @@ class FormData extends Component {
   getValidationState(number) {
     function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
     if (!number) return null;
+    if (isNumber(number)) return null;
+    return "error";
+  }
+
+  getValidationStatePorcentaje(number, label = "") {
+    function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
+    if (!number) return null;
+    if (label === "total" && number !== 100) return "error";
+    if (number > 100) return "error";
     if (isNumber(number)) return null;
     return "error";
   }
