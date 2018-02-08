@@ -81,9 +81,9 @@ const objectToArray = (object, { porcentajeTotal, gramosTotal }) => {
   _.map(object, (value, faseIndex) => {
     ingLength[faseIndex] =  Object.keys(value.ingrediente).length;
     const newArray = _.map(value.ingrediente, (val, index) => {
-      return [parseInt(faseIndex)+1, val.nombre, val.inci, val.funcion, val.porcentaje.toFixed(2), val.gramos];
+      return [parseInt(faseIndex)+1, val.nombre, val.inci, val.funcion, val.porcentaje.toFixed(2)+' %', val.gramos + ' g'];
     });
-    newArray.push([parseInt(faseIndex)+1,"%?=","%?=-","Total Fase",value.porcentajeFase.toFixed(2), value.gramosFase]);
+    newArray.push([parseInt(faseIndex)+1,"%?=","%?=-","Total Fase",value.porcentajeFase.toFixed(2)+ ' %', value.gramosFase + ' g']);
     // newArray.push(["???-","","","","",""]);
     newArray.map((value,index) => {
       returnArray.push(value);
