@@ -81,21 +81,22 @@ const objectToArray = (object, { porcentajeTotal, gramosTotal }) => {
   _.map(object, (value, faseIndex) => {
     ingLength[faseIndex] =  Object.keys(value.ingrediente).length;
     const newArray = _.map(value.ingrediente, (val, index) => {
-      return [parseInt(faseIndex)+1, val.nombre, val.inci, val.funcion, val.porcentaje.toFixed(2)+' %', val.gramos + ' g'];
+      return [parseInt(faseIndex)+1, val.nombre, val.inci, val.funcion, (val.porcentaje.toFixed(2)+' %'), val.gramos + ' g'];
     });
-    newArray.push([parseInt(faseIndex)+1,"%?=","%?=-","Total Fase",value.porcentajeFase.toFixed(2)+ ' %', value.gramosFase + ' g']);
+    newArray.push([parseInt(faseIndex)+1,"%?=","%?=-",("Total Fase " + (parseInt(faseIndex)+1)),(value.porcentajeFase.toFixed(2)+ ' %'), value.gramosFase + ' g']);
     // newArray.push(["???-","","","","",""]);
     newArray.map((value,index) => {
       returnArray.push(value);
     })
   });
-  returnArray.push(["","%?=","%?=-","Total",porcentajeTotal, gramosTotal])
+  returnArray.push(["","%?=","%?=-","Total",(porcentajeTotal.toFixed(2) + ' %'), gramosTotal] + 'g')
   return { data: returnArray, ingLength};
 }
 
 const renderDoc = (doc, data, columns, ingLength) => {
   let rowIndex = 1;
   let cellIndex = 1;
+  let last = false;
   let first = doc.autoTable.previous;
   doc.autoTable(columns, data, {
         theme: 'grid',
@@ -116,6 +117,9 @@ const renderDoc = (doc, data, columns, ingLength) => {
             }
         },
         drawCell: function (cell, data) {
+          if (last) {
+            doc.setFontStyle('bold');
+          }
           if(cell.raw === "Total Fase") {
             doc.setFontStyle('bold');
             doc.setFontSize(10);
@@ -123,6 +127,7 @@ const renderDoc = (doc, data, columns, ingLength) => {
           if(cell.raw === "Total") {
             doc.setFontStyle('bold');
             doc.setFontSize(10);
+            last = true;
             // doc.setTextColor(0, 0, 0);
           }
           if (cell.raw === "%?=") {
