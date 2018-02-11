@@ -5,73 +5,22 @@ require('jspdf-autotable');
 
 
 export function generatePdf(tableOne, rawDataFase) {
-    const { titulo, referencia, fecha, pesoTotal, porcentajeTotal, gramosTotal } = tableOne;
+    const { porcentajeTotal, gramosTotal } = tableOne;
     const columns = ["Fase", "Nombre Ingrediente", "INCI", "Función", "Porcentaje (%)", "Gramos (grs)"];
-    const horizontal = [
-      ["Nombre de tu receta:", titulo],
-      ["Número de referencia:", referencia],
-      ["Fecha de producción:", fecha],
-      ["Peso Total:", pesoTotal],
-    ];
     const dataFase = objectToArray(rawDataFase, { porcentajeTotal, gramosTotal });
     let doc = new jsPDF();
-    const pageContent = (data) => {
-           // HEADER
-           let base64Img = null;
-           doc.setFontSize(20);
-           doc.setTextColor(40);
-           doc.setFontStyle('normal');
-           // toDataURL(
-           //    '/media/menta-logo.jpeg',
-           //    function(dataUrl) {
-           //      doc.addImage(dataUrl, 'JPEG', data.settings.margin.left, 15, 10, 10);
-           //      doc.text("Mentactiva", data.settings.margin.left + 15, 22);
-           //    }
-           //  )
-           // imgToBase64('menta-logo.jpeg', function(base64) {
-           //      base64Img = base64;
-           //  });
-            console.log(img);
-           if (img) {
-               doc.addImage(img, 'JPEG', data.settings.margin.left+40, 15, 124, 26);
-           }
-           // doc.text("Mentactiva", data.settings.margin.left + 15, 22);
 
-           // FOOTER
-           var str = "Página " + data.pageCount;
-           // Total page number plugin only available in jspdf v1.0+
-           if (typeof doc.putTotalPages === 'function') {
-               str = str + " of " + totalPagesExp;
-           }
-           doc.setFontSize(10);
-           doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-    }
-    // var data = [
-    //     [1, "Denmark", 7.526, "Copenhagen"],
-    //     [2, "Switzerland", 	7.509, "Bern"],
-    //     [3, "Iceland", 7.501, "Reykjavík"],
-    //     [4, "Norway", 7.498, "Oslo"],
-    //     [5, "Finland", 7.413, "Helsinki"]
-    // ];
+    // doc.autoTable(['',''], horizontal, {
+    //   startY: 50,
+    //   theme: 'grid',
+    //   showHeader: 'never',
+    //   columnStyles: {
+    //     name: {textColor: 255, fontStyle: 'bold'}
+    //   },
+    //   margin: {top: 30, right: 107}
+    // });
 
-    const totalPagesExp = "{total_pages_count_string}";
-    // Total page number plugin only available in jspdf v1.0+
-
-    doc.autoTable(['',''], horizontal, {
-      startY: 50,
-      addPageContent: pageContent,
-      theme: 'grid',
-      showHeader: 'never',
-      columnStyles: {
-        name: {textColor: 255, fontStyle: 'bold'}
-      },
-      margin: {top: 30, right: 107}
-    });
-    if (typeof doc.putTotalPages === 'function') {
-        doc.putTotalPages(totalPagesExp);
-    }
-
-    doc = renderDoc(doc, dataFase.data, columns, dataFase.ingLength);
+    doc = renderDoc(doc, dataFase.data, columns, dataFase.ingLength, tableOne);
     doc.save(tableOne.titulo + ".pdf");
 }
 
@@ -81,26 +30,85 @@ const objectToArray = (object, { porcentajeTotal, gramosTotal }) => {
   _.map(object, (value, faseIndex) => {
     ingLength[faseIndex] =  Object.keys(value.ingrediente).length;
     const newArray = _.map(value.ingrediente, (val, index) => {
-      return [parseInt(faseIndex)+1, val.nombre, val.inci, val.funcion, ((val.porcentaje ? val.porcentaje.toFixed(2) : val.porcentaje) +' %'), val.gramos + ' g'];
+      return [parseInt(faseIndex, 10)+1, val.nombre, val.inci, val.funcion, ((val.porcentaje ? val.porcentaje.toFixed(3) : val.porcentaje) +' %'), val.gramos + ' g'];
     });
-    newArray.push([parseInt(faseIndex)+1,"%?=","%?=-",("Total Fase " + (parseInt(faseIndex)+1)),(value.porcentajeFase.toFixed(2)+ ' %'), value.gramosFase + ' g']);
+    newArray.push([parseInt(faseIndex, 10)+1,"%?=","%?=-",("Total Fase " + (parseInt(faseIndex, 10)+1)),(value.porcentajeFase.toFixed(3)+ ' %'), value.gramosFase + ' g']);
     // newArray.push(["???-","","","","",""]);
     newArray.map((value,index) => {
       returnArray.push(value);
+      return null;
     })
   });
-  returnArray.push(["","%?=","%?=-","Total",(porcentajeTotal + ' %'), gramosTotal] + 'g')
+  returnArray.push(["","%?=","%?=-","Total",(porcentajeTotal + ' %'), gramosTotal + ' g'])
   return { data: returnArray, ingLength};
 }
 
-const renderDoc = (doc, data, columns, ingLength) => {
+const renderDoc = (doc, data, columns, ingLength, tableOne) => {
+  const { titulo, referencia, fecha, pesoTotal } = tableOne;
+  const horizontal = [
+    ["Nombre de tu receta: "],
+    ["Número de referencia: "],
+    ["Fecha de producción: "],
+    ["Peso Total: "],
+  ];
+  doc.setFontSize(10);
+  doc.setFontStyle('bold');
+  doc.text(horizontal[0], 14, 50);
+  doc.setFontStyle('none');
+  doc.setFontSize(10);
+  doc.text(titulo, 51, 50);
+  doc.setFontSize(10);
+  doc.setFontStyle('bold');
+  doc.text(horizontal[1], 14, 60);
+  doc.setFontStyle('none');
+  doc.setFontSize(10);
+  doc.text(referencia, 49, 60);
+  doc.setFontSize(10);
+  doc.setFontStyle('bold');
+  doc.text(horizontal[2], 14, 70);
+  doc.setFontStyle('none');
+  doc.setFontSize(10);
+  doc.text(fecha, 48, 70);
+  doc.setFontSize(10);
+  doc.setFontStyle('bold');
+  doc.text(horizontal[3], 14, 80);
+  doc.setFontStyle('none');
+  doc.setFontSize(10);
+  doc.text(pesoTotal + ' g', 33, 80);
+  const pageContent = (data) => {
+         // HEADER
+         doc.setFontSize(20);
+         doc.setTextColor(40);
+         doc.setFontStyle('normal');
+         // toDataURL(
+         //    '/media/menta-logo.jpeg',
+         //    function(dataUrl) {
+         //      doc.addImage(dataUrl, 'JPEG', data.settings.margin.left, 15, 10, 10);
+         //      doc.text("Mentactiva", data.settings.margin.left + 15, 22);
+         //    }
+         //  )
+         // imgToBase64('menta-logo.jpeg', function(base64) {
+         //      base64Img = base64;
+         //  });
+         if (img) {
+             doc.addImage(img, 'JPEG', data.settings.margin.left+33, 15, 124, 26);
+         }
+         // doc.text("Mentactiva", data.settings.margin.left + 15, 22);
+
+         // FOOTER
+         var str = "www.mentactiva.com";
+         // Total page number plugin only available in jspdf v1.0+
+         doc.setTextColor(70, 177, 152);
+         doc.setFontSize(15);
+         doc.text(str, 80, doc.internal.pageSize.height - 10);
+  }
   let rowIndex = 1;
   let cellIndex = 1;
   let last = false;
-  let first = doc.autoTable.previous;
   doc.autoTable(columns, data, {
+        addPageContent: pageContent,
         theme: 'grid',
-        startY: first.finalY + 10,
+        startY: 90,
         drawRow: function (row, data) {
             doc.setFontStyle('bold');
             doc.setFontSize(10);
@@ -120,7 +128,8 @@ const renderDoc = (doc, data, columns, ingLength) => {
           if (last) {
             doc.setFontStyle('bold');
           }
-          if(cell.raw === "Total Fase") {
+          const str = "Total Fase " + (cellIndex-1);
+          if(cell.raw === str) {
             doc.setFontStyle('bold');
             doc.setFontSize(10);
           }
@@ -137,7 +146,7 @@ const renderDoc = (doc, data, columns, ingLength) => {
           if (cell.raw === "%?=-") return false;
             if (data.column.dataKey === 0) {
 
-                if (parseInt(cell.raw) === cellIndex) {
+                if (parseInt(cell.raw, 10) === cellIndex) {
                   doc.setFontStyle('bold');
                   doc.setFontSize(10);
                   doc.rect(cell.x, cell.y, data.table.width, cell.contentHeight * (ingLength[cellIndex-1]+1), 'S');
@@ -153,43 +162,4 @@ const renderDoc = (doc, data, columns, ingLength) => {
         }
     });
     return doc;
-}
-
-function toDataURL(src, callback, outputFormat) {
-  var img = new Image();
-  img.crossOrigin = 'Anonymous';
-  img.onload = function() {
-    var canvas = document.createElement('CANVAS');
-    var ctx = canvas.getContext('2d');
-    var dataURL;
-    canvas.height = this.naturalHeight;
-    canvas.width = this.naturalWidth;
-    ctx.drawImage(this, 0, 0);
-    dataURL = canvas.toDataURL(outputFormat);
-    callback(dataURL);
-  };
-  img.src = src;
-  if (img.complete || img.complete === undefined) {
-    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-    img.src = src;
-  }
-}
-
-
-function imgToBase64(url, callback) {
-    if (!window.FileReader) {
-        callback(null);
-        return;
-    }
-    var xhr = new XMLHttpRequest();
-    xhr.responseType = 'blob';
-    xhr.onload = function() {
-        var reader = new FileReader();
-        reader.onloadend = function() {
-            callback(reader.result.replace('text/xml', 'image/jpeg'));
-        };
-        reader.readAsDataURL(xhr.response);
-    };
-    xhr.open('GET', url);
-    xhr.send();
 }

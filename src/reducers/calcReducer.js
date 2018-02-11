@@ -27,6 +27,7 @@ const initialState = {
   porcentajeTotal: 0,
   gramosTotal: 0,
   ts: 0,
+  enableGramos: true,
 };
 
 export default (state = initialState, action) => {

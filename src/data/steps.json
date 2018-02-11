@@ -23,5 +23,13 @@
   "funcion": {
     "title": "Función",
     "text": "Esta es la información del punto de función"
+  },
+  "toggleButton": {
+    "title": "ToggleButton",
+    "text": "Esta es la información del botón toggle"
+  },
+  "totalFormula": {
+    "title": "Total Formula",
+    "text": "Esta es la información del total de la Fórmula"
   }
 }

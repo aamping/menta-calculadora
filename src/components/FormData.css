@@ -12,10 +12,44 @@
   margin-right: 56px;
 }
 
+.switch-buttons {
+  border-color: #46b198;
+}
+
+.switch-button {
+  color: #46b198;
+  margin-top: 5px;
+  border-radius: 15px;
+  border-color: #46b198;
+  background-image: none;
+  background-color: white;
+}
+.switch-button.btn.btn-default.active {
+  color: white !important;
+  background-color: #46b198 !important;
+}
 
 .addon {
   border-radius: 15px;
   background-color: white;
+}
+
+.addon-numbers {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.addon-badge {
+  vertical-align: top;
+}
+
+.badge-fase {
+  margin-top: 5px;
+}
+
+.form-numbers {
+  padding-left: 8px;
+  padding-right: 6px;
 }
 
 .no-addons {
@@ -75,17 +109,17 @@
   margin-right: 5px;
 }
 
-.col-md-3 {
+.col-xs-3 {
   padding-right: 5px;
   padding-left: 0;
 }
 
-.col-md-2 {
+.col-xs-2 {
   padding-right: 4px;
   padding-left: 0;
 }
 
-.col-md-1 {
+.col-xs-1 {
   padding-right: 1px;
   padding-left: 5px;
 }

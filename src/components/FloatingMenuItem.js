@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './FloatingMenuItem.css';
 
 class FloatingMenuItem extends React.Component {
@@ -8,9 +8,6 @@ class FloatingMenuItem extends React.Component {
 	}
 
 	render() {
-		let buttonStyle = {
-			backgroundImage: `url(${this.props.icon})`
-		}
 
 		let label;
 
