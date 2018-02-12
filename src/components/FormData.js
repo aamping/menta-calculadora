@@ -415,7 +415,7 @@ class FormData extends Component {
           <Col xsd={3} >
           <div style={{ display: 'flex' }}>
             <ButtonToolbar>
-              <ToggleButtonGroup className='switch-buttons' onChange={this.handleSwitch} type="radio" name="options" value={this.props.enableGramos}>
+              <ToggleButtonGroup className='switch-buttons' onChange={this.handleSwitch} type="radio" name="options" defaultValue={this.props.enableGramos ? this.props.enableGramos : false} value={this.props.enableGramos}>
                 <ToggleButton className='switch-button' value={true}>Gramos</ToggleButton>
                 <ToggleButton className='switch-button' value={false}>Porcentaje</ToggleButton>
               </ToggleButtonGroup>
